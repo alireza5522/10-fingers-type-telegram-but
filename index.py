@@ -12,7 +12,6 @@ os.chdir(application_path)
 
 plugin = dict(root="plugins")
 
-
 app = Client(name="test2",
              api_id=API_ID,
              api_hash=API_HASH,
