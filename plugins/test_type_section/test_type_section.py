@@ -1,7 +1,7 @@
 from collections import defaultdict
 from pyrogram import Client,filters
 from pyrogram.types import Message , ReplyKeyboardMarkup , ReplyKeyboardRemove , InlineKeyboardMarkup , InlineKeyboardButton , CallbackQuery , KeyboardButton
-from .nec import *
+from .test_type_section_functions import *
 import time
 
 @Client.on_message(filters.command("start") & filters.private)
@@ -21,9 +21,10 @@ async def button_handel(c:Client,m:Message):
      db.commit()
      keyboard = InlineKeyboardMarkup([
         [InlineKeyboardButton("شروع", callback_data="start")],
+        [InlineKeyboardButton("برگشت", callback_data="stop")]
      ])
 
-     await m.reply_text(text="Hello! Choose an option:",reply_markup=keyboard)
+     await m.reply_text(text="برای شروع تست دکمه شروع رو کلیک کنید",reply_markup=keyboard)
      
 
 @Client.on_callback_query()
@@ -44,6 +45,12 @@ async def callback_query(client, callback_query):
                mycursor.execute(f'UPDATE users SET stats = "typing" WHERE id = {str(callback_query.message.chat.id)};')
                mycursor.execute(f'UPDATE typing SET start_time = \"{str(time.time())}\",text_type = \"{text}\" WHERE user_id = {str(callback_query.message.chat.id)};')
                db.commit()
+
+          elif callback_query.data == "stop":
+               keyboard = create_keyboard([["تست تایپ ده انگشتی"]])
+               await callback_query.message.edit_text(f"به منوی اصلی برگشتید",reply_markup=ReplyKeyboardRemove())
+               mycursor.execute(f'UPDATE users SET stats = "start" WHERE id = {str(callback_query.message.chat.id)};')
+               db.commit()
           
      elif stats == "typing":
 
@@ -53,13 +60,10 @@ async def callback_query(client, callback_query):
           
                keyboard = InlineKeyboardMarkup([
                [InlineKeyboardButton("شروع", callback_data="start")],
+               [InlineKeyboardButton("برگشت", callback_data="stop")]
                ])
 
                await callback_query.message.edit_text(text="Hello! Choose an option:",reply_markup=keyboard)
-
-
-
-
 
 @Client.on_message((~filters.command("start") | ~filters.regex("تست تایپ ده انگشتی")) & filters.private)
 async def message_handel(c:Client,m:Message):
@@ -81,10 +85,11 @@ async def message_handel(c:Client,m:Message):
           db.commit()
 
           keyboard = InlineKeyboardMarkup([
-          [InlineKeyboardButton("شروع", callback_data="start")],
-          ])
+               [InlineKeyboardButton("شروع", callback_data="start")],
+               [InlineKeyboardButton("برگشت", callback_data="stop")]
+               ])
 
-          await m.reply_text(text=f"سرعت تایپ (کلمه بر دقیقه): **{wpm:.1f}**\nدقت تایپ: **{accuracy:.1f}%**\nتعداد غلط: **{errors}**\n\n{"⭐️"*stars}\n\n{highlight_text}\n\nبرای شروع متن بعدی دکمه شروع رو بزنید",reply_markup=keyboard)
+          await m.reply_text(text=f"سرعت تایپ (کلمه بر دقیقه): **{wpm:.1f}**\nدقت تایپ: **{accuracy:.1f}%**\nتعداد غلط: **{errors}**\n\n{"⭐️"*stars}\n\n{highlight_text}\n\n{read_encorrage(str(stars))}\n\nبرای شروع متن بعدی دکمه شروع رو بزنید",reply_markup=keyboard)
 
 
 
