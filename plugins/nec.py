@@ -2,7 +2,7 @@ from collections import defaultdict
 from pyrogram import Client,filters
 from pyrogram.types import Message , ReplyKeyboardMarkup , ReplyKeyboardRemove , InlineKeyboardMarkup , InlineKeyboardButton , CallbackQuery , KeyboardButton
 from datetime import datetime
-from keys.keys import *
+from keys.keys import HOST,USER,PASSWORD,DATABASE
 import pytz
 import mysql.connector
 import json
@@ -69,6 +69,66 @@ def levenshtein_distance(s1, s2):
 
     return previous_row[-1]
 
+def rate_typing(accuracy, speed):
+    rating_criteria = {
+        (95, 50): 5,
+        (95, 30): 4,
+        (90, 50): 4,
+        (90, 30): 3,
+        (80, 30): 2
+    }
+    
+    for (acc_threshold, spd_threshold), stars in rating_criteria.items():
+        if accuracy > acc_threshold and speed > spd_threshold:
+            return stars
+    return 1
+
+def highlight_errors(original_text, user_input):
+    original_words = original_text.split()
+    user_words = user_input.split()
+    len_original = len(original_words)
+    len_user = len(user_words)
+    dp = [[0] * (len_user + 1) for _ in range(len_original + 1)]
+
+    for i in range(len_original + 1):
+        for j in range(len_user + 1):
+            if i == 0:
+                dp[i][j] = j
+            elif j == 0:
+                dp[i][j] = i
+            elif original_words[i - 1] == user_words[j - 1]:
+                dp[i][j] = dp[i - 1][j - 1]
+            else:
+                dp[i][j] = 1 + min(dp[i][j - 1], dp[i - 1][j], dp[i - 1][j - 1])
+
+    result = []
+    i, j = len_original, len_user
+    while i > 0 and j > 0:
+        if original_words[i - 1] == user_words[j - 1]:
+            result.append(original_words[i - 1])
+            i -= 1
+            j -= 1
+        elif dp[i][j] == dp[i - 1][j - 1] + 1:
+            result.append(f"--**{user_words[j - 1]}**--")
+            i -= 1
+            j -= 1
+        elif dp[i][j] == dp[i - 1][j] + 1:
+            result.append(f"--**{original_words[i - 1]}**--")
+            i -= 1
+        else:
+            result.append(f"--**{user_words[j - 1]}**--")
+            j -= 1
+
+    while i > 0:
+        result.append(f"--**{original_words[i - 1]}**--")
+        i -= 1
+
+    while j > 0:
+        result.append(f"--**{user_words[j - 1]}**--")
+        j -= 1
+
+    return ' '.join(result[::-1])
+
 def calculate_typing_metrics(original_text, user_input, time_seconds):
     # محاسبه تعداد کاراکترهای صحیح
     correct_chars = levenshtein_distance(original_text, user_input)
@@ -89,7 +149,9 @@ def calculate_typing_metrics(original_text, user_input, time_seconds):
     # محاسبه دقت تایپ
     accuracy = (correct_chars / total_chars) * 100
     accuracy = 100 - accuracy
+
+    text = highlight_errors(original_text,user_input)
     
-    return wpm, accuracy
+    return wpm, accuracy,correct_chars,rate_typing(accuracy, wpm),text
 
 
