@@ -150,15 +150,17 @@ def calculate_typing_metrics(original_text, user_input, time_seconds):
     accuracy = (correct_chars / total_chars) * 100
     accuracy = 100 - accuracy
 
+    stars = rate_typing(accuracy, wpm)
     text = highlight_errors(original_text,user_input)
-    
-    return wpm, accuracy,correct_chars,rate_typing(accuracy, wpm),text
+    enc = read_encorrage(str(stars))
+    return wpm, accuracy,correct_chars,stars,text,enc
 
 def read_encorrage(stars):
-    data1 = {}
-    data2 = {}
-    with open('plugins/test_type_section/file.json', mode='r', encoding='utf-8') as file:
-        data1 = json.load(file)
-    with open('plugins/test_type_section/emoji.json', mode='r', encoding='utf-8') as file:
-        data2 = json.load(file)
-    return data1[stars][random.randint(0,len(data1[stars]))] + data2[stars][random.randint(0,len(data2[stars]))]
+    try:
+        with open('plugins/test_type_section/file.json', mode='r', encoding='utf-8') as file:
+            data1 = json.load(file)
+        with open('plugins/test_type_section/emoji.json', mode='r', encoding='utf-8') as file:
+            data2 = json.load(file)
+        return data1[stars][random.randint(1,len(data1[stars]))-1] + data2[stars][random.randint(1,len(data2[stars]))-1]
+    except:
+        return ""
