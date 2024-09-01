@@ -18,4 +18,5 @@ app = Client(name="test2",
              bot_token=BOT_TOKEN,
              plugins=plugin)
 
+
 app.run()

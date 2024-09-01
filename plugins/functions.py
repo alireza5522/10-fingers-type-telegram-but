@@ -45,7 +45,7 @@ def check_user(m):
         db.commit()
 
 def read_fact():
-    with open("plugins/test_type_section/texts.txt", 'r', encoding='utf-8') as file:
+    with open("plugins/texts.txt", 'r', encoding='utf-8') as file:
         lines = file.readlines()
         random_line = random.choice(lines).strip()
     return random_line
@@ -157,9 +157,9 @@ def calculate_typing_metrics(original_text, user_input, time_seconds):
 
 def read_encorrage(stars):
     try:
-        with open('plugins/test_type_section/file.json', mode='r', encoding='utf-8') as file:
+        with open('plugins/file.json', mode='r', encoding='utf-8') as file:
             data1 = json.load(file)
-        with open('plugins/test_type_section/emoji.json', mode='r', encoding='utf-8') as file:
+        with open('plugins/emoji.json', mode='r', encoding='utf-8') as file:
             data2 = json.load(file)
         return data1[stars][random.randint(1,len(data1[stars]))-1] + data2[stars][random.randint(1,len(data2[stars]))-1]
     except:
