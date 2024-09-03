@@ -69,14 +69,17 @@ def levenshtein_distance(s1, s2):
 
     return previous_row[-1]
 
-def rate_typing(accuracy, speed):
-    rating_criteria = {
-        (95, 50): 5,
-        (95, 30): 4,
-        (90, 50): 4,
-        (90, 30): 3,
-        (80, 30): 2
-    }
+def rate_typing(accuracy, speed, rate_dict):
+    if rate_dict == "":
+        rating_criteria = {
+            (95, 50): 5,
+            (95, 30): 4,
+            (90, 50): 4,
+            (90, 30): 3,
+            (80, 30): 2
+        }
+    else:
+        rating_criteria = rate_dict
     
     for (acc_threshold, spd_threshold), stars in rating_criteria.items():
         if accuracy > acc_threshold and speed > spd_threshold:
@@ -129,7 +132,8 @@ def highlight_errors(original_text, user_input):
 
     return ' '.join(result[::-1])
 
-def calculate_typing_metrics(original_text, user_input, time_seconds):
+
+def calculate_typing_metrics(original_text, user_input, time_seconds,rate_dict):
     # محاسبه تعداد کاراکترهای صحیح
     correct_chars = levenshtein_distance(original_text, user_input)
     # محاسبه تعداد کل کاراکترهای تایپ شده
@@ -150,7 +154,7 @@ def calculate_typing_metrics(original_text, user_input, time_seconds):
     accuracy = (correct_chars / total_chars) * 100
     accuracy = 100 - accuracy
 
-    stars = rate_typing(accuracy, wpm)
+    stars = rate_typing(accuracy, wpm, rate_dict)
     text = highlight_errors(original_text,user_input)
     enc = read_encorrage(str(stars))
     return wpm, accuracy,correct_chars,stars,text,enc
